@@ -7,8 +7,5 @@ services:
     restart: always
     ports:
       - ${WIKI_PORT}:3000
-      # - ${WIKI_PORT_SSL}:3443
-    # volumes:
-    #   - ./media:/var/www/html
     extra_hosts:
       - host.docker.internal:host-gateway
