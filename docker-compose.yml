@@ -10,3 +10,5 @@ services:
       # - ${WIKI_PORT_SSL}:3443
     # volumes:
     #   - ./media:/var/www/html
+    extra_hosts:
+      - host.docker.internal:host-gateway
