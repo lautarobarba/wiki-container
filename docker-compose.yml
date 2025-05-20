@@ -1,0 +1,12 @@
+name: wikijs
+services:
+  wiki_app:
+    container_name: wiki_app
+    image: ghcr.io/requarks/wiki:2
+    env_file: .env
+    restart: always
+    ports:
+      - ${WIKI_PORT}:3000
+      # - ${WIKI_PORT_SSL}:3443
+    # volumes:
+    #   - ./media:/var/www/html
