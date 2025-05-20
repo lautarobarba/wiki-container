@@ -1,11 +1,36 @@
-name: wikijs
+name: bookstack
 services:
-  wiki_app:
-    container_name: wiki_app
-    image: ghcr.io/requarks/wiki:2
+  wiki_db:
+    container_name: wiki_db
+    image: mysql:5.7
     env_file: .env
     restart: always
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+    volumes:
+      - ./database/data:/var/lib/mysql
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  wiki_app:
+    container_name: wiki_app
+    image: solidnerd/bookstack:25.2
+    env_file: .env
+    depends_on:
+      - wiki_db
+    restart: always
+    environment:
+      - DB_HOST=wiki_db:3306
+      - ALLOWED_IFRAME_HOSTS="*"
+      - ALLOWED_IFRAME_SOURCES="*"
     ports:
-      - ${WIKI_PORT}:3000
+      - ${WIKI_PORT}:8080
+    volumes:
+      - ./bookstack/public/uploads:/var/www/bookstack/public/uploads
+      - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
     extra_hosts:
       - host.docker.internal:host-gateway

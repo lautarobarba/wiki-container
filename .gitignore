@@ -1,2 +1,8 @@
 # Variables de entorno
 .env
+
+# Media
+bookstack
+
+# Database
+database
