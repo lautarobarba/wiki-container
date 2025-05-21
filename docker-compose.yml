@@ -11,6 +11,8 @@ services:
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
+    # ports:
+    #   - 6005:3306
     volumes:
       - ./database/data:/var/lib/mysql
     extra_hosts:
