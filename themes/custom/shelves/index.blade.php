@@ -6,7 +6,7 @@
 
 @section('right')
 
-    {{-- <div class="actions mb-xl">
+    <div class="actions mb-xl">
         <h5>{{ trans('common.actions') }}</h5>
         <div class="icon-list text-link">
             @if(userCan('bookshelf-create-all'))
@@ -23,7 +23,7 @@
                 <span>{{ trans('entities.tags_view_tags') }}</span>
             </a>
         </div>
-    </div> --}}
+    </div>
 
 @stop
 
