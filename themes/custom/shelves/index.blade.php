@@ -22,18 +22,20 @@
                 <span>@icon('tag')</span>
                 <span>{{ trans('entities.tags_view_tags') }}</span>
             </a>
+
+            @include('common.dark-mode-toggle', ['classes' => 'icon-list-item text-link'])
         </div>
     </div>
 
 @stop
 
 @section('left')
-    @if($recents)
+    {{-- @if($recents)
         <div id="recents" class="mb-xl">
             <h5>{{ trans('entities.recently_viewed') }}</h5>
             @include('entities.list', ['entities' => $recents, 'style' => 'compact'])
         </div>
-    @endif
+    @endif --}}
 
     {{-- <div id="popular" class="mb-xl">
         <h5>{{ trans('entities.shelves_popular') }}</h5>
