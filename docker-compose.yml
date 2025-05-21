@@ -25,12 +25,15 @@ services:
     restart: always
     environment:
       - DB_HOST=wiki_db:3306
-      - ALLOWED_IFRAME_HOSTS="*"
-      - ALLOWED_IFRAME_SOURCES="*"
+      - APP_LANG=es_AR
+      - APP_THEME=custom
+      # - ALLOWED_IFRAME_HOSTS="*"
+      # - ALLOWED_IFRAME_SOURCES="*"
     ports:
       - ${WIKI_PORT}:8080
     volumes:
       - ./bookstack/public/uploads:/var/www/bookstack/public/uploads
       - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
+      - ./themes:/var/www/bookstack/themes
     extra_hosts:
       - host.docker.internal:host-gateway
