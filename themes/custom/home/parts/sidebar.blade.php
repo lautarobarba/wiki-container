@@ -5,7 +5,7 @@
     </div>
 @endif --}}
 
-{{-- @if(count($favourites) > 0)
+@if(count($favourites) > 0)
     <div id="top-favourites" class="mb-xl">
         <h5>{{ trans('entities.my_most_viewed_favourites') }}</h5>
         @include('entities.list', [
@@ -14,7 +14,7 @@
         ])
         <a href="{{ url('/favourites')  }}" class="text-muted block py-xs">{{ trans('common.view_all') }}</a>
     </div>
-@endif --}}
+@endif
 
 {{-- <div class="mb-xl">
     <h5>{{ trans('entities.' . (auth()->check() ? 'my_recently_viewed' : 'books_recent')) }}</h5>
