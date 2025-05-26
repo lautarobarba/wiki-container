@@ -37,5 +37,11 @@ services:
       - ./bookstack/public/uploads:/var/www/bookstack/public/uploads
       - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
       - ./themes:/var/www/bookstack/themes
+    networks:
+      - nginx-proxy
     extra_hosts:
       - host.docker.internal:host-gateway
+
+networks:
+  nginx-proxy:
+    external: true
