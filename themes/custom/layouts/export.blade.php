@@ -12,8 +12,11 @@
     @include('exports.parts.custom-head')
 </head>
 <body class="export export-format-{{ $format }} export-engine-{{ $engine ?? 'none' }}">
-{{-- <h1>TODO: CUSTOM EXPORT LAYOUT!!!</h1> --}}
-@include('layouts.parts.export-body-start')
+<hr/>
+    <h1>Manual impreso desde la wiki de stj</h1>
+</hr>
+
+    @include('layouts.parts.export-body-start')
 <div class="page-content" dir="auto">
     @yield('content')
 </div>
