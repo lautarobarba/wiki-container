@@ -16,7 +16,7 @@ services:
     volumes:
       - ./database/data:/var/lib/mysql
     networks:
-      - nginx-proxy
+      - wiki-net
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -33,6 +33,11 @@ services:
       - APP_THEME=custom
       # - ALLOWED_IFRAME_HOSTS="*"
       # - ALLOWED_IFRAME_SOURCES="*"
+      # Reverse proxy
+      - VIRTUAL_HOST=${WIKI_VIRTUAL_HOST}
+      - VIRTUAL_PORT=${WIKI_VIRTUAL_PORT}
+      - LETSENCRYPT_HOST=${WIKI_LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${WIKI_LETSENCRYPT_EMAIL}
     ports:
       - ${WIKI_PORT}:8080
     volumes:
@@ -40,10 +45,13 @@ services:
       - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
       - ./themes:/var/www/bookstack/themes
     networks:
+      - wiki-net
       - nginx-proxy
     extra_hosts:
       - host.docker.internal:host-gateway
 
 networks:
+  wiki-net:
+    internal: true
   nginx-proxy:
     external: true
