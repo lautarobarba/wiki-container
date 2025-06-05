@@ -1,4 +1,4 @@
-# Wiki JS
+# Wiki Bookstack
 
 ## Wiki para homelab
 
