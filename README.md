@@ -4,6 +4,13 @@
 
 Documentar: $ sudo chown -R www-data: bookstack/
 
+## Usuario por default
+
+```bash
+USER: admin@admin.com
+PASSWD: password
+```
+
 ## Actualizacion de APP_URL
 
 La APP_URL se guarda estáticamente en las siguientes tablas:
