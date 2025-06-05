@@ -4,6 +4,16 @@
 
 Documentar: $ sudo chown -R www-data: bookstack/
 
+## Instalación
+
+Hay que crear y cambiar permisos de uploads a www-data
+
+```bash
+$ sudo mkdir -p bookstack/public/uploads
+$ sudo mkdir -p bookstack/storage/uploads
+$ sudo chown -R www-data:www-data bookstack
+```
+
 ## Usuario por default
 
 ```bash
