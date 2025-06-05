@@ -12,11 +12,9 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
     # ports:
-    #   - 6005:3306
+    #   - 3306:3306
     volumes:
       - ./database/data:/var/lib/mysql
-    networks:
-      - wiki-net
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -33,25 +31,11 @@ services:
       - APP_THEME=custom
       # - ALLOWED_IFRAME_HOSTS="*"
       # - ALLOWED_IFRAME_SOURCES="*"
-      # Reverse proxy
-      - VIRTUAL_HOST=${WIKI_VIRTUAL_HOST}
-      - VIRTUAL_PORT=${WIKI_VIRTUAL_PORT}
-      - LETSENCRYPT_HOST=${WIKI_LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=${WIKI_LETSENCRYPT_EMAIL}
     ports:
       - ${WIKI_PORT}:8080
     volumes:
       - ./bookstack/public/uploads:/var/www/bookstack/public/uploads
       - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
       - ./themes:/var/www/bookstack/themes
-    networks:
-      - wiki-net
-      - nginx-proxy
     extra_hosts:
       - host.docker.internal:host-gateway
-
-networks:
-  wiki-net:
-    internal: true
-  nginx-proxy:
-    external: true
