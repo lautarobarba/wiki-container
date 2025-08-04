@@ -28,10 +28,10 @@ La APP_URL se guarda estáticamente en las siguientes tablas:
     - bookstack.settings
     - bookstack.images
 
-Por lo que hay que actualizar manualmente en caso de actualizarla
+Por lo que hay que actualizar manualmente en caso de cambiarla.
 
 ```sql
--- Cambio el puerto 8000 por 8005
+-- Cambio localhost:8000 por nueva_url
 SELECT url FROM bookstack.images;
 UPDATE bookstack.images SET url = REPLACE(url, 'http://localhost:8000', 'http://nueva_url');
 
