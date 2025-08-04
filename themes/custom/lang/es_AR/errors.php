@@ -68,11 +68,11 @@ return [
     // Entities
     'entity_not_found' => 'Entidad no encontrada',
     'bookshelf_not_found' => 'Sistema no encontrado',
-    'book_not_found' => 'Libro no encontrado',
+    'book_not_found' => 'Manual no encontrado',
     'page_not_found' => 'Página no encontrada',
     'chapter_not_found' => 'Capítulo no encontrado',
-    'selected_book_not_found' => 'El libro seleccionado no fue encontrado',
-    'selected_book_chapter_not_found' => 'El libro o capítulo seleccionado no fue encontrado',
+    'selected_book_not_found' => 'El manual seleccionado no fue encontrado',
+    'selected_book_chapter_not_found' => 'El manual o capítulo seleccionado no fue encontrado',
     'guests_cannot_save_drafts' => 'Los invitados no pueden guardar los borradores',
 
     // Users
@@ -108,10 +108,10 @@ return [
     // Import
     'import_zip_cant_read' => 'No se pudo leer el archivo ZIP.',
     'import_zip_cant_decode_data' => 'No se pudo encontrar ni decodificar el contenido del archivo ZIP data.json.',
-    'import_zip_no_data' => 'Los datos del archivo ZIP no tienen un libro, un capítulo o contenido de página en su contenido.',
+    'import_zip_no_data' => 'Los datos del archivo ZIP no tienen un manual, un capítulo o contenido de página en su contenido.',
     'import_validation_failed' => 'Error al validar la importación del ZIP con los errores:',
     'import_zip_failed_notification' => 'Error al importar archivo ZIP.',
-    'import_perms_books' => 'Le faltan los permisos necesarios para crear libros.',
+    'import_perms_books' => 'Le faltan los permisos necesarios para crear manuales.',
     'import_perms_chapters' => 'Le faltan los permisos necesarios para crear capítulos.',
     'import_perms_pages' => 'Le faltan los permisos necesarios para crear páginas.',
     'import_perms_images' => 'Le faltan los permisos necesarios para crear imágenes.',

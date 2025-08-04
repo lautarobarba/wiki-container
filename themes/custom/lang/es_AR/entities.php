@@ -1,6 +1,5 @@
 <?php
 /**
- * Text used for 'Entities' (Document Structure Elements) such as
  * Books, Shelves, Chapters & Pages
  */
 return [
@@ -10,7 +9,7 @@ return [
     'recently_created_pages' => 'Páginas creadas recientemente',
     'recently_updated_pages' => 'Páginas actualizadas recientemente',
     'recently_created_chapters' => 'Capítulos creados recientemente',
-    'recently_created_books' => 'Libros creados recientemente',
+    'recently_created_books' => 'Manuales creados recientemente',
     'recently_created_shelves' => 'Sistemas creados recientemente',
     'recently_update' => 'Actaulizado recientemente',
     'recently_viewed' => 'Visto recientemente',
@@ -45,7 +44,7 @@ return [
     'default_template_select' => 'Seleccione una página de plantilla',
     'import' => 'Importar',
     'import_validate' => 'Validar importación',
-    'import_desc' => 'Importar libros, capítulos y páginas usando una exportación zip portable de la misma instancia u otra distinta. Seleccione un archivo ZIP para continuar. Después de que el archivo haya sido subido y validado, podrá configurar y confirmar la importación en la siguiente vista.',
+    'import_desc' => 'Importar manuales, capítulos y páginas usando una exportación zip portable de la misma instancia u otra distinta. Seleccione un archivo ZIP para continuar. Después de que el archivo haya sido subido y validado, podrá configurar y confirmar la importación en la siguiente vista.',
     'import_zip_select' => 'Seleccione archivo ZIP a subir',
     'import_zip_validation_errors' => 'Se detectaron errores al validar el archivo ZIP proporcionado:',
     'import_pending' => 'Importaciones pendientes',
@@ -67,7 +66,7 @@ return [
     // Permissions and restrictions
     'permissions' => 'Permisos',
     'permissions_desc' => 'Establezca los permisos aquí para reemplazar los permisos predeterminados proporcionados por los roles de usuario.',
-    'permissions_book_cascade' => 'Los permisos establecidos en los libros se aplicarán a los capítulos contenidos y las páginas contenidas, a menos que tengan sus propios permisos definidos.',
+    'permissions_book_cascade' => 'Los permisos establecidos en los manuales se aplicarán a los capítulos contenidos y las páginas contenidas, a menos que tengan sus propios permisos definidos.',
     'permissions_chapter_cascade' => 'Los permisos establecidos en los capítulos se aplicarán a las páginas contenidas, a menos que tengan sus propios permisos definidos.',
     'permissions_save' => 'Guardar permisos',
     'permissions_owner' => 'Propietario',
@@ -214,7 +213,7 @@ return [
     'chapters_permissions_active' => 'Permisos de capítulo activado',
     'chapters_permissions_success' => 'Permisos de capítulo actualizados',
     'chapters_search_this' => 'Buscar en este capítulo',
-    'chapter_sort_book' => 'Organizar Libro',
+    'chapter_sort_book' => 'Organizar Manual',
 
     // Pages
     'page' => 'Página',
@@ -230,7 +229,7 @@ return [
     'pages_delete_draft' => 'Borrar borrador de página',
     'pages_delete_success' => 'Página borrada',
     'pages_delete_draft_success' => 'Borrador de página borrado',
-    'pages_delete_warning_template' => 'Esta página está en uso como plantilla de página predeterminada de libro o capítulo. Estos libros o capítulos ya no tendrán una plantilla de página predeterminada asignada después de eliminar esta página.',
+    'pages_delete_warning_template' => 'Esta página está en uso como plantilla de página predeterminada de manual o capítulo. Estos manuales o capítulos ya no tendrán una plantilla de página predeterminada asignada después de eliminar esta página.',
     'pages_delete_confirm' => '¿Está seguro de borrar esta página?',
     'pages_delete_draft_confirm' => 'Está seguro de que desea borrar este borrador de página?',
     'pages_editing_named' => 'Editando página :pageName',
@@ -327,7 +326,7 @@ return [
     'toggle_sidebar' => 'Mostrar/ocultar barra lateral',
     'page_tags' => 'Etiquetas de página',
     'chapter_tags' => 'Etiquetas de capítulo',
-    'book_tags' => 'Etiquetas de libro',
+    'book_tags' => 'Etiquetas de manual',
     'shelf_tags' => 'Etiquetas de Sistema',
     'tag' => 'Etiqueta',
     'tags' =>  'Etiquetas',
@@ -340,13 +339,13 @@ return [
     'tags_usages' => 'Uso total de etiquetas',
     'tags_assigned_pages' => 'Asignadas a páginas',
     'tags_assigned_chapters' => 'Asignadas a capítulos',
-    'tags_assigned_books' => 'Asignadas a libros',
+    'tags_assigned_books' => 'Asignadas a manuales',
     'tags_assigned_shelves' => 'Asignadas a sistemas',
     'tags_x_unique_values' => ':count valores únicos',
     'tags_all_values' => 'Todos los valores',
     'tags_view_tags' => 'Ver etiquetas',
     'tags_view_existing_tags' => 'Ver etiquetas existentes',
-    'tags_list_empty_hint' => 'Las etiquetas se pueden asignar a través de la barra lateral del editor de páginas o mientras se editan los detalles de un libro, capítulo o sistema.',
+    'tags_list_empty_hint' => 'Las etiquetas se pueden asignar a través de la barra lateral del editor de páginas o mientras se editan los detalles de un manual, capítulo o sistema.',
     'attachments' => 'Adjuntos',
     'attachments_explain' => 'Subir archivos o agregar enlaces para mostrar en la página. Estos son visibles en la barra lateral de la página.',
     'attachments_explain_instant_save' => 'Los cambios se guardan de manera instantánea.',
@@ -385,7 +384,7 @@ return [
     'profile_created_content' => 'Contenido creado',
     'profile_not_created_pages' => ':userName no ha creado páginas',
     'profile_not_created_chapters' => ':userName no ha creado capítulos',
-    'profile_not_created_books' => ':userName no ha creado libros',
+    'profile_not_created_books' => ':userName no ha creado manuales',
     'profile_not_created_shelves' => ':userName no ha creado sistemas',
 
     // Comments
@@ -430,13 +429,13 @@ return [
 
     // Conversions
     'convert_to_shelf' => 'Convertir a Sistema',
-    'convert_to_shelf_contents_desc' => 'Puedes convertir este libro a un nuevo sistema con el mismo contenido. Los capítulos contenidos en este libro se convertirán en libros nuevos. Si este libro contiene alguna página, que no esté en un capítulo, este libro será renombrado y contendrá tales páginas, y este libro pasará a formar parte del nuevo sistema.',
-    'convert_to_shelf_permissions_desc' => 'Cualquier permiso establecido en este libro será copiado al nuevo sistema y a todos los nuevos libros que no tengan sus propios permisos configurados. Tenga en cuenta que los permisos de los sistemas no se aplican automáticamente sobre el contenido en su interior, como lo hacen para los libros.',
-    'convert_book' => 'Convertir Libro',
-    'convert_book_confirm' => '¿Está seguro de que desea convertir este libro?',
+    'convert_to_shelf_contents_desc' => 'Puedes convertir este manual a un nuevo sistema con el mismo contenido. Los capítulos contenidos en este manual se convertirán en manuales nuevos. Si este manual contiene alguna página, que no esté en un capítulo, este manual será renombrado y contendrá tales páginas, y este manual pasará a formar parte del nuevo sistema.',
+    'convert_to_shelf_permissions_desc' => 'Cualquier permiso establecido en este manual será copiado al nuevo sistema y a todos los nuevos manuales que no tengan sus propios permisos configurados. Tenga en cuenta que los permisos de los sistemas no se aplican automáticamente sobre el contenido en su interior, como lo hacen para los manuales.',
+    'convert_book' => 'Convertir Manual',
+    'convert_book_confirm' => '¿Está seguro de que desea convertir este manual?',
     'convert_undo_warning' => 'Esto no se puede deshacer de forma sencilla.',
-    'convert_to_book' => 'Convertir a Libro',
-    'convert_to_book_desc' => 'Puede convertir este capítulo en un nuevo libro con el mismo contenido. Cualquier permiso establecido en este capítulo será copiado al nuevo libro pero cualquier permiso heredado, del libro padre, no se copiará lo que podría derivar en un cambio en el control de acceso.',
+    'convert_to_book' => 'Convertir a Manual',
+    'convert_to_book_desc' => 'Puede convertir este capítulo en un nuevo manual con el mismo contenido. Cualquier permiso establecido en este capítulo será copiado al nuevo manual pero cualquier permiso heredado, del manual padre, no se copiará lo que podría derivar en un cambio en el control de acceso.',
     'convert_chapter' => 'Convertir Capítulo',
     'convert_chapter_confirm' => '¿Está seguro de que quiere convertir este capítulo?',
 
@@ -464,8 +463,8 @@ return [
     'watch_detail_new' => 'Suscripciones de nuevas páginas',
     'watch_detail_updates' => 'Suscripciones de nuevas páginas y actualizaciones de páginas',
     'watch_detail_comments' => 'Suscripciones de nuevas páginas, actualizaciones de páginas y comentarios',
-    'watch_detail_parent_book' => 'Subscripciones por libro contenedor',
-    'watch_detail_parent_book_ignore' => 'Ignorando a través del libro contenedor',
+    'watch_detail_parent_book' => 'Subscripciones por manual contenedor',
+    'watch_detail_parent_book_ignore' => 'Ignorando a través del manual contenedor',
     'watch_detail_parent_chapter' => 'Subscripciones por capítulo contenedor',
     'watch_detail_parent_chapter_ignore' => 'Ignorar por capítulo contenedor',
 ];
