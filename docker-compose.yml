@@ -36,6 +36,7 @@ services:
     volumes:
       - ./bookstack/public/uploads:/var/www/bookstack/public/uploads
       - ./bookstack/storage/uploads:/var/www/bookstack/storage/uploads
+      - ./bookstack/logs:/var/www/bookstack/storage/logs
       - ./themes:/var/www/bookstack/themes
     extra_hosts:
       - host.docker.internal:host-gateway
