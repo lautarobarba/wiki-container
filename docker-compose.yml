@@ -40,3 +40,26 @@ services:
       - ./themes:/var/www/bookstack/themes
     extra_hosts:
       - host.docker.internal:host-gateway
+
+  # wiki_mcp:
+  #   container_name: wiki_mcp_dev
+  #   image: wiki_mcp_dev:1.0.0
+  #   build:
+  #     context: .
+  #     target: base
+  #     dockerfile: ./mcp_server/Dockerfile
+  #   command: bash -c "npm install && npm run dev"
+  #   # command: bash -c "tail -f /dev/null"
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - NODE_ENV=development
+  #     - LOG_LEVEL=debug
+  #     - PORT=${MCP_PORT}
+  #   ports:
+  #     - ${MCP_PORT}:${MCP_PORT}
+  #   volumes:
+  #     - ./mcp_server:/app
+  #   extra_hosts:
+  #     - host.docker.internal:host-gateway

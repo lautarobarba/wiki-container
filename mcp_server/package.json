@@ -1,0 +1,43 @@
+{
+  "type": "module",
+  "name": "bookstack-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for BookStack API - Allows AI models to interact with BookStack wiki",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && chmod 755 build/index.js",
+    "dev": "tsc --watch",
+    "start": "node build/index.js",
+    "test-simple": "node test-simple.js",
+    "test-interactive": "node test-mcp.js",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "mcp",
+    "bookstack",
+    "api",
+    "wiki",
+    "documentation",
+    "ai"
+  ],
+  "author": "Lautaro Barba",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.1",
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "typescript": "^5.9.2"
+  },
+  "bin": {
+    "bookstack-mcp-server": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ]
+}

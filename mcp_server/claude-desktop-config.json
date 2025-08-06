@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "bookstack": {
+      "command": "node",
+      "args": ["/ruta/completa/a/tu/mcp_server/build/index.js"],
+      "env": {
+        "BOOKSTACK_BASE_URL": "https://tu-bookstack.example.com",
+        "BOOKSTACK_TOKEN_ID": "tu_token_id",
+        "BOOKSTACK_TOKEN": "tu_token_secreto"
+      }
+    }
+  }
+}

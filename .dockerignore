@@ -1,0 +1,61 @@
+# Node.js
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Frontend specific
+mcp_server/node_modules
+mcp_server/build
+mcp_server/coverage
+mcp_server/.env
+mcp_server/tmp
+
+# Build artifacts
+build/
+dist/
+coverage/
+*.zip
+
+# Development tools
+.vscode/
+.idea/
+.DS_Store
+.DS_STORE
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# IDE and editor files
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Backup files
+*.backup
+*.bak
