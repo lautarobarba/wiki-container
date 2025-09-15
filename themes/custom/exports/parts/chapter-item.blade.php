@@ -1,5 +1,6 @@
 <div class="page-break"></div>
-<h1 id="chapter-{{$chapter->id}}">{{ $chapter->name }}</h1>
+
+<h1 id="chapter-{{$chapter->id}}" style="font-size: 1.8em">{{ $chapter->name }}</h1>
 
 <div>{!! $chapter->descriptionHtml() !!}</div>
 

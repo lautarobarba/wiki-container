@@ -4,5 +4,5 @@
     <div class="chapter-hint">{{$chapter->name}}</div>
 @endif
 
-<h1 id="page-{{$page->id}}">{{ $page->name }}</h1>
+<h1 id="page-{{$page->id}}" style="font-size: 1.6em">{{ $page->name }}</h1>
 {!! $page->html !!}

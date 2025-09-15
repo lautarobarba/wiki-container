@@ -1,10 +1,11 @@
 @extends('layouts.export')
 
+@section('shelf', $book->shelves->first()?->name ?? '')
 @section('title', $book->name)
 
 @section('content')
 
-    <h1 style="font-size: 4.8em">{{$book->name}}</h1>
+    <h1 style="font-size: 2em">{{$book->name}}</h1>
     <div>{!! $book->descriptionHtml() !!}</div>
 
     @include('exports.parts.book-contents-menu', ['children' => $bookChildren])

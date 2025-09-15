@@ -1,2 +1,5 @@
-{{-- This is a placeholder template file provided as a --}}
-{{-- convenience to users of the visual theme system. --}}
+<div style="text-align: center; margin-top: 3rem">
+    <hr />
+    <p style="font-size: 16px;"><em>Poder Judicial de Tierra del Fuego</em></p>
+    <p style="font-size: 14px; margin-top: 1rem"><em><?php echo date("d/m/Y")?></em></p>
+</div>

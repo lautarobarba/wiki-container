@@ -16,5 +16,30 @@
         blockquote {
             border-left-color: {{ setting('app-color') }};
         }
+
+        body.export-engine-dompdf {
+            counter-reset: page;
+        }
+
+        body.export-engine-dompdf::before {
+            /* content: counter(page); */
+            content: "{{ trim($__env->yieldContent('shelf')) }} - {{ trim($__env->yieldContent('title')) }}";
+            position: fixed;
+            top: 0;
+            right: 0;
+            font-size: 10px;
+            color: #222;
+            counter-increment: 1;
+        }
+
+        body.export-engine-dompdf::after {
+            content: "Página " . counter(page);
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            font-size: 10px;
+            color: #222;
+            counter-increment: 1;
+        }
     </style>
 @endif

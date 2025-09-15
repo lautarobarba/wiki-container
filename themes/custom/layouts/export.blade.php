@@ -10,16 +10,26 @@
 
     @include('exports.parts.styles', ['format' => $format, 'engine' => $engine ?? ''])
     @include('exports.parts.custom-head')
+    
+    <style>
+        * {
+        font-family: "Times New Roman", Times, serif !important;
+        }
+
+        h1 {
+            font-size: 1.6em;
+        }
+    </style>
 </head>
 <body class="export export-format-{{ $format }} export-engine-{{ $engine ?? 'none' }}">
-<hr/>
-    <h1>Manual impreso desde la wiki de stj</h1>
-</hr>
 
-    @include('layouts.parts.export-body-start')
+@include('layouts.parts.export-body-start')
+
 <div class="page-content" dir="auto">
     @yield('content')
 </div>
+
 @include('layouts.parts.export-body-end')
+
 </body>
 </html>
