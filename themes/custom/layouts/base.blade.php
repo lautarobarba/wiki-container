@@ -43,6 +43,18 @@
 
     <!-- Translations for JS -->
     @stack('translations')
+
+    <style>
+        h1 {
+            font-size: 1.8em;
+        }
+        h2 {
+            font-size: 1.6em;
+        }
+        h3 {
+            font-size: 1.4em;
+        }
+    </style>
 </head>
 <body
     @if(setting()->getForCurrentUser('ui-shortcuts-enabled', false))
