@@ -15,15 +15,15 @@
                     id="comment-tab-active"
                     aria-controls="comment-tab-panel-active"
                     refs="page-comments@active-tab"
-                    aria-selected="true">{{ trans_choice('entities.comment_thread_count', $commentTree->activeThreadCount()) }}</button>
+                    aria-selected="true">{{ trans_choice('entities.comment_thread_count', 0) }}</button>
             <button type="button"
                     role="tab"
                     id="comment-tab-archived"
                     aria-controls="comment-tab-panel-archived"
                     refs="page-comments@archived-tab"
-                    aria-selected="false">{{ trans_choice('entities.comment_archived_count', count($commentTree->getArchived())) }}</button>
+                    aria-selected="false">{{ trans_choice('entities.comment_archived_count', 0) }}</button>
         </div>
-        @if ($commentTree->empty() && userCan('comment-create-all'))
+        @if (userCan('comment-create-all'))
             <div refs="page-comments@add-button-container" class="ml-m flex-container-row" >
                 <button type="button"
                         refs="page-comments@add-comment-button"
@@ -39,22 +39,18 @@
          aria-labelledby="comment-tab-active"
          class="comment-container no-outline">
         <div refs="page-comments@comment-container">
-            @foreach($commentTree->getActive() as $branch)
-                @include('comments.comment-branch', ['branch' => $branch, 'readOnly' => false])
-            @endforeach
+            {{-- Comments will be populated via JavaScript --}}
         </div>
 
         <p class="text-center text-muted italic empty-state">{{ trans('entities.comment_none') }}</p>
 
         @if(userCan('comment-create-all'))
             @include('comments.create')
-            @if (!$commentTree->empty())
-                <div refs="page-comments@addButtonContainer" class="ml-m flex-container-row">
-                    <button type="button"
-                            refs="page-comments@add-comment-button"
-                            class="button outline mb-m ml-auto">{{ trans('entities.comment_add') }}</button>
-                </div>
-            @endif
+            <div refs="page-comments@addButtonContainer" class="ml-m flex-container-row">
+                <button type="button"
+                        refs="page-comments@add-comment-button"
+                        class="button outline mb-m ml-auto">{{ trans('entities.comment_add') }}</button>
+            </div>
         @endif
     </div>
 
@@ -65,13 +61,11 @@
          aria-labelledby="comment-tab-archived"
          hidden="hidden"
          class="comment-container no-outline">
-        @foreach($commentTree->getArchived() as $branch)
-            @include('comments.comment-branch', ['branch' => $branch, 'readOnly' => false])
-        @endforeach
-            <p class="text-center text-muted italic empty-state">{{ trans('entities.comment_none') }}</p>
+        {{-- Archived comments will be populated via JavaScript --}}
+        <p class="text-center text-muted italic empty-state">{{ trans('entities.comment_none') }}</p>
     </div>
 
-    @if(userCan('comment-create-all') || $commentTree->canUpdateAny())
+    @if(userCan('comment-create-all'))
         @push('body-end')
             <script src="{{ versioned_asset('libs/tinymce/tinymce.min.js') }}" nonce="{{ $cspNonce }}" defer></script>
             @include('form.editor-translations')
