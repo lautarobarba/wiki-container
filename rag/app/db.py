@@ -18,9 +18,11 @@ def _connect():
     )
 
 
-def fetch_wiki_snapshot():
-    """Devuelve el estado actual de la wiki: sistemas (shelves), manuales
-    (books) con los sistemas a los que pertenecen, y páginas publicadas."""
+def fetch_wiki_structure():
+    """Devuelve la estructura actual de la wiki SIN el contenido de las
+    páginas: sistemas (shelves), manuales (books) con los sistemas a los que
+    pertenecen, y metadata de páginas publicadas (id, nombre, updated_at).
+    El texto se pide aparte, solo para las páginas que cambiaron."""
     with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
@@ -40,7 +42,7 @@ def fetch_wiki_snapshot():
 
             cur.execute(
                 """
-                SELECT id, book_id, name, slug, text, updated_at
+                SELECT id, book_id, name, slug, updated_at
                 FROM pages
                 WHERE deleted_at IS NULL AND draft = 0 AND template = 0
                 """
@@ -60,6 +62,21 @@ def fetch_wiki_snapshot():
         "book_to_shelves": book_to_shelves,
         "pages": [page for page in pages if page["book_id"] in book_ids],
     }
+
+
+def fetch_pages_text(page_ids: list[int]) -> dict[int, str]:
+    """Texto plano de las páginas indicadas (solo las que van a procesarse)."""
+    if not page_ids:
+        return {}
+    with _connect() as conn:
+        with conn.cursor() as cur:
+            placeholders = ",".join(["%s"] * len(page_ids))
+            cur.execute(
+                f"SELECT id, text FROM pages WHERE id IN ({placeholders})",
+                page_ids,
+            )
+            rows = cur.fetchall()
+    return {row["id"]: row["text"] or "" for row in rows}
 
 
 def check_connection() -> bool:

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Wiki RAG{% endblock %}</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --primary: #206ea7;
+            --ok: #0a7d33;
+            --err: #b42318;
+            --border: color-mix(in srgb, currentColor 18%, transparent);
+            --muted: color-mix(in srgb, currentColor 55%, transparent);
+            --surface: color-mix(in srgb, currentColor 4%, transparent);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.6rem 1.25rem;
+            background: var(--primary);
+            color: #fff;
+        }
+        .navbar .brand { font-weight: 700; font-size: 1.05rem; }
+        .navbar .session { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
+        .navbar form { margin: 0; }
+        .navbar button {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: #fff;
+            border-radius: 6px;
+            padding: 0.3rem 0.9rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .navbar button:hover { background: rgba(255, 255, 255, 0.28); }
+        main { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+        h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+        h2 { font-size: 1.1rem; margin-top: 2rem; }
+        button.action {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        button.action.secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        button.action:hover { filter: brightness(1.1); }
+        .muted { color: var(--muted); }
+        input[type=text], input[type=password] {
+            width: 100%;
+            padding: 0.5rem 0.7rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: transparent;
+            color: inherit;
+        }
+        input:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+        {% block styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% block body %}{% endblock %}
+</body>
+</html>

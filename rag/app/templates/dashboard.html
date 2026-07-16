@@ -1,159 +1,134 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Wiki RAG — Administración</title>
-    <style>
-        :root {
-            color-scheme: light dark;
-            --primary: #206ea7;
-            --ok: #0a7d33;
-            --warn: #b54708;
-            --err: #b42318;
-            --border: color-mix(in srgb, currentColor 18%, transparent);
-            --muted: color-mix(in srgb, currentColor 55%, transparent);
-        }
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 1.5rem 1rem 4rem;
-            line-height: 1.5;
-        }
-        h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
-        h2 { font-size: 1.1rem; margin-top: 2rem; }
-        .subtitle { color: var(--muted); margin-top: 0; }
-        .status-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
-        .badge {
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 0.15rem 0.75rem;
-            font-size: 0.85rem;
-        }
-        .badge.ok { color: var(--ok); border-color: var(--ok); }
-        .badge.err { color: var(--err); border-color: var(--err); }
-        .actions { display: flex; gap: 0.75rem; margin: 1.25rem 0; }
-        button {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1.1rem;
-            font-size: 0.95rem;
-            cursor: pointer;
-        }
-        button.secondary { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
-        button:hover { filter: brightness(1.1); }
-        .result {
-            border: 1px solid var(--border);
-            border-left: 4px solid var(--ok);
-            border-radius: 6px;
-            padding: 0.75rem 1rem;
-            margin: 1rem 0;
-        }
-        .result.has-errors { border-left-color: var(--err); }
-        .result ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.92rem; }
-        th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); }
-        th { color: var(--muted); font-weight: 600; }
-        td.num, th.num { text-align: right; }
-        .shelf-name { font-weight: 600; background: color-mix(in srgb, currentColor 6%, transparent); }
-        .muted { color: var(--muted); }
-        .log-detail { font-size: 0.8rem; color: var(--err); }
-    </style>
-</head>
-<body>
-    <h1>Wiki RAG</h1>
-    <p class="subtitle">Índice de conocimiento por sistema para el asistente IA de la wiki.</p>
-
-    <div class="status-row">
-        <span class="badge {{ 'ok' if db_ok else 'err' }}">
-            Base de la wiki: {{ 'conectada' if db_ok else 'sin conexión' }}
-        </span>
-        <span class="badge {{ 'ok' if openai_configured else 'err' }}">
-            OpenAI: {{ 'configurado' if openai_configured else 'falta OPENAI_API_KEY' }}
-        </span>
-        <span class="badge">{{ overview.total_pages }} páginas / {{ overview.total_chunks }} chunks</span>
-    </div>
-
-    <div class="actions">
-        <form method="post" action="/admin/sync">
-            <button type="submit" title="Agrega manuales nuevos, actualiza modificados y quita eliminados">Sincronizar</button>
-        </form>
-        <form method="post" action="/admin/rebuild"
-              onsubmit="return confirm('Esto vacía el índice y lo regenera desde cero (re-embebe todo, consume API). ¿Continuar?')">
-            <button type="submit" class="secondary">Regenerar todo</button>
-        </form>
-    </div>
-
-    {% if result %}
-        <div class="result {{ 'has-errors' if result.errors else '' }}">
-            <strong>Resultado:</strong>
-            {{ result.added }} agregadas, {{ result.updated }} actualizadas, {{ result.removed }} eliminadas.
-            {% if result.errors %}
-                <ul>
-                    {% for error in result.errors %}<li class="log-detail">{{ error }}</li>{% endfor %}
-                </ul>
-            {% endif %}
+{% extends "base.html" %}
+{% block title %}Wiki RAG — Administración{% endblock %}
+{% block styles %}
+    .status-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+    .badge {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.15rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    .badge.ok { color: var(--ok); border-color: var(--ok); }
+    .badge.err { color: var(--err); border-color: var(--err); }
+    .actions { display: flex; gap: 0.75rem; margin: 1.25rem 0; }
+    .result {
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--ok);
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+    }
+    .result.has-errors { border-left-color: var(--err); }
+    .result ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.92rem; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 600; }
+    td.num, th.num { text-align: right; }
+    .shelf-name { font-weight: 600; background: var(--surface); }
+    .log-detail { font-size: 0.8rem; color: var(--err); }
+{% endblock %}
+{% block body %}
+    <nav class="navbar">
+        <span class="brand">Wiki RAG</span>
+        <div class="session">
+            <span>{{ user }}</span>
+            <form method="post" action="/logout">
+                <button type="submit">Cerrar sesión</button>
+            </form>
         </div>
-    {% endif %}
+    </nav>
+    <main>
+        <h1>Índice de conocimiento</h1>
+        <p class="muted" style="margin-top: 0">Base del asistente IA de la wiki, separada por sistemas.</p>
 
-    <h2>Sistemas y manuales indexados</h2>
-    {% if not overview.shelves and not overview.orphan_books %}
-        <p class="muted">El índice está vacío. Ejecutá una sincronización para poblarlo.</p>
-    {% endif %}
-    <table>
-        <thead>
-            <tr><th>Manual</th><th class="num">Páginas</th><th class="num">Chunks</th></tr>
-        </thead>
-        <tbody>
-            {% for shelf in overview.shelves %}
-                <tr><td colspan="3" class="shelf-name">{{ shelf.shelf_name }}</td></tr>
-                {% for book in shelf.books %}
-                    <tr>
-                        <td>{{ book.book_name }}</td>
-                        <td class="num">{{ book.pages }}</td>
-                        <td class="num">{{ book.chunks }}</td>
-                    </tr>
-                {% else %}
-                    <tr><td colspan="3" class="muted">Sin manuales</td></tr>
-                {% endfor %}
-            {% endfor %}
-            {% if overview.orphan_books %}
-                <tr><td colspan="3" class="shelf-name">Sin sistema (no disponibles en el chat)</td></tr>
-                {% for book in overview.orphan_books %}
-                    <tr>
-                        <td>{{ book.book_name }}</td>
-                        <td class="num">{{ book.pages }}</td>
-                        <td class="num">{{ book.chunks }}</td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
-        </tbody>
-    </table>
+        <div class="status-row">
+            <span class="badge {{ 'ok' if db_ok else 'err' }}">
+                Base de la wiki: {{ 'conectada' if db_ok else 'sin conexión' }}
+            </span>
+            <span class="badge {{ 'ok' if openai_configured else 'err' }}">
+                OpenAI: {{ 'configurado' if openai_configured else 'falta OPENAI_API_KEY' }}
+            </span>
+            <span class="badge">{{ overview.total_pages }} páginas / {{ overview.total_chunks }} chunks</span>
+        </div>
 
-    <h2>Últimas sincronizaciones</h2>
-    {% if overview.last_syncs %}
+        <div class="actions">
+            <form method="post" action="/admin/sync">
+                <button type="submit" class="action" title="Procesa únicamente los documentos creados o modificados después de la última sincronización, y quita los eliminados">Sincronizar</button>
+            </form>
+            <form method="post" action="/admin/rebuild"
+                  onsubmit="return confirm('Esto vacía el índice y lo regenera desde cero (re-embebe todo, consume API). ¿Continuar?')">
+                <button type="submit" class="action secondary">Regenerar todo</button>
+            </form>
+        </div>
+
+        {% if result %}
+            <div class="result {{ 'has-errors' if result.errors else '' }}">
+                <strong>Resultado:</strong>
+                {{ result.added }} agregadas, {{ result.updated }} actualizadas, {{ result.removed }} eliminadas,
+                {{ result.skipped }} sin cambios (no reprocesadas).
+                {% if result.errors %}
+                    <ul>
+                        {% for error in result.errors %}<li class="log-detail">{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <h2>Sistemas y manuales indexados</h2>
+        {% if not overview.shelves and not overview.orphan_books %}
+            <p class="muted">El índice está vacío. Ejecutá una sincronización para poblarlo.</p>
+        {% endif %}
         <table>
             <thead>
-                <tr><th>Fecha (UTC)</th><th>Tipo</th><th class="num">+</th><th class="num">~</th><th class="num">−</th><th>Errores</th></tr>
+                <tr><th>Manual</th><th class="num">Páginas</th><th class="num">Chunks</th></tr>
             </thead>
             <tbody>
-                {% for log in overview.last_syncs %}
-                    <tr>
-                        <td>{{ log.ran_at }}</td>
-                        <td>{{ 'Regeneración' if log.kind == 'rebuild' else 'Sincronización' }}</td>
-                        <td class="num">{{ log.added }}</td>
-                        <td class="num">{{ log.updated }}</td>
-                        <td class="num">{{ log.removed }}</td>
-                        <td class="log-detail">{{ log.detail }}</td>
-                    </tr>
+                {% for shelf in overview.shelves %}
+                    <tr><td colspan="3" class="shelf-name">{{ shelf.shelf_name }}</td></tr>
+                    {% for book in shelf.books %}
+                        <tr>
+                            <td>{{ book.book_name }}</td>
+                            <td class="num">{{ book.pages }}</td>
+                            <td class="num">{{ book.chunks }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3" class="muted">Sin manuales</td></tr>
+                    {% endfor %}
                 {% endfor %}
+                {% if overview.orphan_books %}
+                    <tr><td colspan="3" class="shelf-name">Sin sistema (no disponibles en el chat)</td></tr>
+                    {% for book in overview.orphan_books %}
+                        <tr>
+                            <td>{{ book.book_name }}</td>
+                            <td class="num">{{ book.pages }}</td>
+                            <td class="num">{{ book.chunks }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
             </tbody>
         </table>
-    {% else %}
-        <p class="muted">Todavía no se ejecutó ninguna sincronización.</p>
-    {% endif %}
-</body>
-</html>
+
+        <h2>Últimas sincronizaciones</h2>
+        {% if overview.last_syncs %}
+            <table>
+                <thead>
+                    <tr><th>Fecha (UTC)</th><th>Tipo</th><th class="num">+</th><th class="num">~</th><th class="num">−</th><th>Errores</th></tr>
+                </thead>
+                <tbody>
+                    {% for log in overview.last_syncs %}
+                        <tr>
+                            <td>{{ log.ran_at }}</td>
+                            <td>{{ 'Regeneración' if log.kind == 'rebuild' else 'Sincronización' }}</td>
+                            <td class="num">{{ log.added }}</td>
+                            <td class="num">{{ log.updated }}</td>
+                            <td class="num">{{ log.removed }}</td>
+                            <td class="log-detail">{{ log.detail }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="muted">Todavía no se ejecutó ninguna sincronización.</p>
+        {% endif %}
+    </main>
+{% endblock %}

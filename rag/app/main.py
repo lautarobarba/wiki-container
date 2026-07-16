@@ -1,15 +1,17 @@
 import os
 import secrets
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
+from starlette.middleware.sessions import SessionMiddleware
 
 from . import config, db, embeddings, indexer, store
 
 app = FastAPI(title="Wiki RAG", docs_url=None, redoc_url=None)
+app.add_middleware(SessionMiddleware, secret_key=config.SESSION_SECRET, https_only=False)
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 security = HTTPBasic()
 
@@ -20,22 +22,30 @@ def startup() -> None:
     store.init_db()
 
 
-def require_auth(credentials: HTTPBasicCredentials = Depends(security)) -> str:
-    """HTTP Basic con las credenciales de .env, tanto para el panel como
-    para /query (BookStack llama con las mismas)."""
+def _credentials_valid(username: str, password: str) -> bool:
     password_ok = config.ADMIN_PASSWORD and secrets.compare_digest(
-        credentials.password.encode(), config.ADMIN_PASSWORD.encode()
+        password.encode(), config.ADMIN_PASSWORD.encode()
     )
-    user_ok = secrets.compare_digest(
-        credentials.username.encode(), config.ADMIN_USER.encode()
-    )
-    if not (user_ok and password_ok):
+    user_ok = secrets.compare_digest(username.encode(), config.ADMIN_USER.encode())
+    return bool(user_ok and password_ok)
+
+
+def require_basic_auth(credentials: HTTPBasicCredentials = Depends(security)) -> str:
+    """HTTP Basic para /query (lo consume BookStack, no un navegador)."""
+    if not _credentials_valid(credentials.username, credentials.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales inválidas",
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
+
+
+def session_user(request: Request) -> str | None:
+    return request.session.get("user")
+
+
+# --- API interna ---
 
 
 @app.get("/health")
@@ -50,7 +60,7 @@ class QueryRequest(BaseModel):
 
 
 @app.post("/query")
-def query(body: QueryRequest, _: str = Depends(require_auth)) -> dict:
+def query(body: QueryRequest, _: str = Depends(require_basic_auth)) -> dict:
     if not body.allowed_book_ids:
         return {"chunks": []}
     try:
@@ -61,47 +71,73 @@ def query(body: QueryRequest, _: str = Depends(require_auth)) -> dict:
     return {"chunks": store.search(vector, body.allowed_book_ids, body.top_k)}
 
 
+# --- Login del panel ---
+
+
+@app.get("/login")
+def login_page(request: Request):
+    if session_user(request):
+        return RedirectResponse("/admin", status_code=303)
+    return templates.TemplateResponse(request, "login.html", {"error": None})
+
+
+@app.post("/login")
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if not _credentials_valid(username, password):
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {"error": "Usuario o contraseña incorrectos."},
+            status_code=401,
+        )
+    request.session["user"] = username
+    return RedirectResponse("/admin", status_code=303)
+
+
+@app.post("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/login", status_code=303)
+
+
+# --- Panel de administración (requiere sesión) ---
+
+
+def _admin_context(request: Request, result: dict | None = None) -> dict:
+    return {
+        "overview": store.get_admin_overview(),
+        "db_ok": db.check_connection(),
+        "openai_configured": bool(config.OPENAI_API_KEY),
+        "result": result,
+        "user": session_user(request),
+    }
+
+
 @app.get("/admin")
-def admin(request: Request, _: str = Depends(require_auth)):
-    overview = store.get_admin_overview()
-    return templates.TemplateResponse(
-        request,
-        "dashboard.html",
-        {
-            "overview": overview,
-            "db_ok": db.check_connection(),
-            "openai_configured": bool(config.OPENAI_API_KEY),
-            "result": None,
-        },
-    )
+def admin(request: Request):
+    if not session_user(request):
+        return RedirectResponse("/login", status_code=303)
+    return templates.TemplateResponse(request, "dashboard.html", _admin_context(request))
 
 
 def _run_sync(request: Request, full_rebuild: bool):
+    if not session_user(request):
+        return RedirectResponse("/login", status_code=303)
     try:
         result = indexer.sync(full_rebuild=full_rebuild)
     except Exception as exc:  # DB caída, etc.: mostrarlo en el panel
-        result = {"added": 0, "updated": 0, "removed": 0, "errors": [str(exc)]}
+        result = {"added": 0, "updated": 0, "removed": 0, "skipped": 0, "errors": [str(exc)]}
 
-    overview = store.get_admin_overview()
-    return templates.TemplateResponse(
-        request,
-        "dashboard.html",
-        {
-            "overview": overview,
-            "db_ok": db.check_connection(),
-            "openai_configured": bool(config.OPENAI_API_KEY),
-            "result": result,
-        },
-    )
+    return templates.TemplateResponse(request, "dashboard.html", _admin_context(request, result))
 
 
 @app.post("/admin/sync")
-def admin_sync(request: Request, _: str = Depends(require_auth)):
+def admin_sync(request: Request):
     return _run_sync(request, full_rebuild=False)
 
 
 @app.post("/admin/rebuild")
-def admin_rebuild(request: Request, _: str = Depends(require_auth)):
+def admin_rebuild(request: Request):
     return _run_sync(request, full_rebuild=True)
 
 

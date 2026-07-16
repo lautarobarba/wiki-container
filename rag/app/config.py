@@ -17,6 +17,14 @@ DB_DATABASE = os.environ.get("DB_DATABASE", "bookstack")
 ADMIN_USER = os.environ.get("RAG_ADMIN_USER", "admin")
 ADMIN_PASSWORD = os.environ.get("RAG_ADMIN_PASSWORD", "")
 
+# Clave para firmar la cookie de sesión del panel. Derivada de las credenciales
+# para que sea estable entre reinicios sin pedir otra variable de entorno.
+import hashlib
+
+SESSION_SECRET = hashlib.sha256(
+    f"rag-session:{ADMIN_USER}:{ADMIN_PASSWORD}".encode()
+).hexdigest()
+
 # Índice persistente.
 DATA_DIR = os.environ.get("RAG_DATA_DIR", "/app/data")
 SQLITE_PATH = os.path.join(DATA_DIR, "rag.sqlite")
