@@ -134,6 +134,7 @@ return [
     'shelves_copy_permissions' => 'Copiar Permisos',
     'shelves_copy_permissions_explain' => 'Esta acción aplicará los permisos del sistema a todos los manuales dentro del mismo. Antes de activarlo, asegúrese de que todos los cambios de permisos para este sistema fueron guardados.',
     'shelves_copy_permission_success' => 'Permisos del sistema copiados a :count manuales',
+    'shelves_search_this' => 'Buscar en este sistema',
 
     // Books
     'book' => 'Manual',
@@ -467,4 +468,17 @@ return [
     'watch_detail_parent_book_ignore' => 'Ignorando a través del manual contenedor',
     'watch_detail_parent_chapter' => 'Subscripciones por capítulo contenedor',
     'watch_detail_parent_chapter_ignore' => 'Ignorar por capítulo contenedor',
+
+    // AI chat widget
+    'ai_chat_title' => 'Asistente IA',
+    'ai_chat_open' => 'Abrir asistente IA',
+    'ai_chat_close' => 'Cerrar asistente IA',
+    'ai_chat_clear' => 'Nueva conversación',
+    'ai_chat_subtitle' => 'Responde en base al contenido de los manuales.',
+    'ai_chat_placeholder' => 'Escribí tu pregunta...',
+    'ai_chat_send' => 'Enviar',
+    'ai_chat_thinking' => 'Pensando...',
+    'ai_chat_sources_label' => 'Basado en:',
+    'ai_chat_no_info' => 'No tengo información sobre eso en los manuales disponibles.',
+    'ai_chat_error' => 'No se pudo obtener una respuesta del asistente. Probá de nuevo más tarde.',
 ];

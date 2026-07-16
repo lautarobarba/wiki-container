@@ -49,12 +49,6 @@
                                 <span>{{ trans('entities.books_empty_create_page') }}</span>
                             </a>
                         @endif
-                        @if(userCan('chapter-create', $book))
-                            <a href="{{ $book->getUrl('/create-chapter') }}" class="icon-list-item text-chapter">
-                                <span class="icon">@icon('chapter')</span>
-                                <span>{{ trans('entities.books_empty_add_chapter') }}</span>
-                            </a>
-                        @endif
                     </div>
 
                 </div>
@@ -96,10 +90,7 @@
                     if (userCan('page-create', $book) || $currentUser->hasSystemRole('admin')) {
                         $userPermissions[] = 'Crear páginas';
                     }
-                    if (userCan('chapter-create', $book) || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Crear capítulos';
-                    }
-                    
+
                     // Crear información del usuario actual
                     if (!empty($userPermissions)) {
                         $userInfo = (object)[
@@ -164,8 +155,6 @@
                                                     @icon('add') {{ $permission }}
                                                 @elseif($permission === 'Crear páginas')
                                                     @icon('page') {{ $permission }}
-                                                @elseif($permission === 'Crear capítulos')
-                                                    @icon('chapter') {{ $permission }}
                                                 @elseif($permission === 'Editar')
                                                     @icon('edit') {{ $permission }}
                                                 @elseif($permission === 'Eliminar')
@@ -224,13 +213,6 @@
                     <span>{{ trans('entities.pages_new') }}</span>
                 </a>
             @endif
-            @if(userCan('chapter-create', $book))
-                <a href="{{ $book->getUrl('/create-chapter') }}" data-shortcut="new" class="icon-list-item">
-                    <span>@icon('add')</span>
-                    <span>{{ trans('entities.chapters_new') }}</span>
-                </a>
-            @endif
-
             <hr class="primary-background">
 
             @if(userCan('book-update', $book))

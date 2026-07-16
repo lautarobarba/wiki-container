@@ -3,9 +3,13 @@
 
 # Media
 bookstack
+bookstack.zip
 
 # Database
 database
 
 # VSCODE config
 .vscode
+
+# Índice del RAG
+rag/data/

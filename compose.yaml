@@ -18,6 +18,20 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
 
+  wiki_rag:
+    container_name: wiki_rag
+    build: ./rag
+    env_file: .env
+    restart: always
+    depends_on:
+      - wiki_db
+    environment:
+      - DB_HOST=wiki_db
+    ports:
+      - ${RAG_PORT:-8090}:8090
+    volumes:
+      - ./rag/data:/app/data
+
   wiki_app:
     container_name: wiki_app
     image: solidnerd/bookstack:25.2

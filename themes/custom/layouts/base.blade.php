@@ -54,6 +54,11 @@
         h3 {
             font-size: 1.4em;
         }
+        /* Movido a la izquierda: el rincón inferior derecho lo ocupa el chat IA */
+        .back-to-top {
+            right: auto;
+            left: 24px;
+        }
     </style>
 </head>
 <body
@@ -79,6 +84,21 @@
             @icon('chevron-up') <span>{{ trans('common.back_to_top') }}</span>
         </div>
     </div>
+
+    {{-- Chat IA flotante: solo cuando lo que se ve pertenece a un sistema (shelf) --}}
+    @php
+        $aiChatShelf = null;
+        if (!user()->isGuest()) {
+            if (isset($shelf) && $shelf instanceof \BookStack\Entities\Models\Bookshelf && $shelf->exists) {
+                $aiChatShelf = $shelf;
+            } elseif (isset($book) && $book instanceof \BookStack\Entities\Models\Book && $book->exists) {
+                $aiChatShelf = $book->shelves()->scopes('visible')->first();
+            }
+        }
+    @endphp
+    @if($aiChatShelf)
+        @include('common.ai-chat-widget', ['aiChatShelf' => $aiChatShelf])
+    @endif
 
     @if($cspNonce ?? false)
         <script src="{{ versioned_asset('dist/app.js') }}" type="module" nonce="{{ $cspNonce }}"></script>
