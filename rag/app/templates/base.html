@@ -30,6 +30,17 @@
             color: #fff;
         }
         .navbar .brand { font-weight: 700; font-size: 1.05rem; }
+        .navbar .nav-links { display: flex; gap: 0.25rem; margin-right: auto; }
+        .navbar .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            opacity: 0.85;
+        }
+        .navbar .nav-links a:hover { background: rgba(255, 255, 255, 0.15); opacity: 1; }
+        .navbar .nav-links a.active { background: rgba(255, 255, 255, 0.22); opacity: 1; }
         .navbar .session { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; }
         .navbar form { margin: 0; }
         .navbar button {

@@ -13,3 +13,7 @@ database
 
 # Índice del RAG
 rag/data/
+
+# Python bytecode
+__pycache__/
+*.pyc

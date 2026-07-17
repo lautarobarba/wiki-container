@@ -63,6 +63,20 @@ def init_db() -> None:
                 removed INTEGER NOT NULL,
                 detail TEXT NOT NULL DEFAULT ''
             );
+            CREATE TABLE IF NOT EXISTS conversations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                user_id INTEGER,
+                user_name TEXT NOT NULL DEFAULT '',
+                shelf_id INTEGER,
+                shelf_name TEXT NOT NULL DEFAULT '',
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL DEFAULT '',
+                sources TEXT NOT NULL DEFAULT '[]',
+                blocked INTEGER NOT NULL DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS idx_conversations_user ON conversations(user_id);
+            CREATE INDEX IF NOT EXISTS idx_conversations_created ON conversations(created_at);
             """
         )
 
@@ -142,6 +156,86 @@ def log_sync(kind: str, added: int, updated: int, removed: int, detail: str = ""
             "INSERT INTO sync_log (kind, added, updated, removed, detail) VALUES (?, ?, ?, ?, ?)",
             (kind, added, updated, removed, detail),
         )
+
+
+def log_conversation(
+    user_id: int | None,
+    user_name: str,
+    shelf_id: int | None,
+    shelf_name: str,
+    question: str,
+    answer: str,
+    sources: list[dict] | None,
+    blocked: bool,
+) -> None:
+    """Guarda un intercambio (pregunta + respuesta) del chatbot para auditoría."""
+    with _lock, _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO conversations
+                (user_id, user_name, shelf_id, shelf_name, question, answer, sources, blocked)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                user_id,
+                user_name or "",
+                shelf_id,
+                shelf_name or "",
+                question,
+                answer or "",
+                json.dumps(sources or [], ensure_ascii=False),
+                1 if blocked else 0,
+            ),
+        )
+
+
+def get_conversation_users() -> list[dict]:
+    """Resumen por usuario para el panel: cantidad de mensajes, último y bloqueados."""
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT user_id,
+                   MAX(user_name) AS user_name,
+                   COUNT(*) AS messages,
+                   MAX(created_at) AS last_at,
+                   COALESCE(SUM(blocked), 0) AS blocked
+            FROM conversations
+            GROUP BY user_id
+            ORDER BY last_at DESC
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_conversations(user_id: int | None = None, limit: int = 300) -> list[dict]:
+    """Intercambios más recientes, opcionalmente filtrados por usuario.
+    El nombre del sistema se completa desde shelves_meta si no vino guardado."""
+    query = """
+        SELECT c.id, c.created_at, c.user_id, c.user_name, c.shelf_id,
+               COALESCE(NULLIF(c.shelf_name, ''), s.shelf_name, '') AS shelf_name,
+               c.question, c.answer, c.sources, c.blocked
+        FROM conversations c
+        LEFT JOIN shelves_meta s ON s.shelf_id = c.shelf_id
+    """
+    params: list = []
+    if user_id is not None:
+        query += " WHERE c.user_id = ?"
+        params.append(user_id)
+    query += " ORDER BY c.created_at DESC, c.id DESC LIMIT ?"
+    params.append(limit)
+
+    with _connect() as conn:
+        rows = conn.execute(query, params).fetchall()
+
+    result = []
+    for row in rows:
+        entry = dict(row)
+        try:
+            entry["sources"] = json.loads(entry["sources"]) if entry["sources"] else []
+        except (ValueError, TypeError):
+            entry["sources"] = []
+        result.append(entry)
+    return result
 
 
 def search(query_vector: list[float], allowed_book_ids: list[int], top_k: int) -> list[dict]:

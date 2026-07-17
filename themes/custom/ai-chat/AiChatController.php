@@ -75,17 +75,22 @@ class AiChatController
             'shelf_id' => 'required|integer',
         ]);
 
+        $shelf = $this->findShelfOrFail((int) $data['shelf_id']);
+        $user = user();
+
         // Filtro previo: si el mensaje trae palabras prohibidas, cortamos acá y
-        // evitamos gastar llamadas a RAG y a la API de OpenAI.
+        // evitamos gastar llamadas a RAG y a la API de OpenAI. Igual lo registramos.
         if ($this->containsBlacklistedWord($data['message'])) {
+            $blockedAnswer = trans('entities.ai_chat_blacklisted');
+            $this->logConversation($user, $shelf, $data['message'], $blockedAnswer, [], true);
+
             return response()->json([
-                'answer'  => trans('entities.ai_chat_blacklisted'),
+                'answer'  => $blockedAnswer,
                 'sources' => [],
                 'no_info' => true,
             ]);
         }
 
-        $shelf = $this->findShelfOrFail((int) $data['shelf_id']);
         $historyKey = $this->historyKey($shelf->id);
         $history = $request->session()->get($historyKey, []);
 
@@ -105,11 +110,45 @@ class AiChatController
         $history[] = ['role' => 'assistant', 'text' => $result['answer'], 'sources' => $result['sources']];
         $request->session()->put($historyKey, array_slice($history, -self::HISTORY_LIMIT));
 
+        $this->logConversation($user, $shelf, $data['message'], $result['answer'], $result['sources'], false);
+
         return response()->json([
             'answer'  => $result['answer'],
             'sources' => $result['sources'],
             'no_info' => $result['no_info'],
         ]);
+    }
+
+    /**
+     * Envía el intercambio al servicio RAG para que lo persista en su SQLite
+     * (auditoría desde el panel). Es best-effort: si el log falla, el chat sigue.
+     */
+    private function logConversation(
+        $user,
+        Bookshelf $shelf,
+        string $question,
+        string $answer,
+        array $sources,
+        bool $blocked
+    ): void {
+        $ragUrl = rtrim(env('RAG_URL', 'http://wiki_rag:8090'), '/');
+
+        try {
+            Http::withBasicAuth(env('RAG_ADMIN_USER', 'admin'), env('RAG_ADMIN_PASSWORD', ''))
+                ->timeout(5)
+                ->post($ragUrl . '/log', [
+                    'user_id'    => $user?->id,
+                    'user_name'  => $user?->name ?? '',
+                    'shelf_id'   => $shelf->id,
+                    'shelf_name' => $shelf->name,
+                    'question'   => $question,
+                    'answer'     => $answer,
+                    'sources'    => $sources,
+                    'blocked'    => $blocked,
+                ]);
+        } catch (\Throwable $e) {
+            // Registro best-effort: nunca romper el chat por esto.
+        }
     }
 
     private function findShelfOrFail(int $shelfId): Bookshelf

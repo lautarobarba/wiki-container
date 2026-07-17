@@ -71,6 +71,33 @@ def query(body: QueryRequest, _: str = Depends(require_basic_auth)) -> dict:
     return {"chunks": store.search(vector, body.allowed_book_ids, body.top_k)}
 
 
+class LogRequest(BaseModel):
+    user_id: int | None = None
+    user_name: str = Field(default="", max_length=255)
+    shelf_id: int | None = None
+    shelf_name: str = Field(default="", max_length=255)
+    question: str = Field(min_length=1, max_length=4000)
+    answer: str = Field(default="", max_length=8000)
+    sources: list[dict] = Field(default_factory=list)
+    blocked: bool = False
+
+
+@app.post("/log")
+def log(body: LogRequest, _: str = Depends(require_basic_auth)) -> dict:
+    """Registra un intercambio del chatbot (lo llama BookStack, no un navegador)."""
+    store.log_conversation(
+        user_id=body.user_id,
+        user_name=body.user_name,
+        shelf_id=body.shelf_id,
+        shelf_name=body.shelf_name,
+        question=body.question,
+        answer=body.answer,
+        sources=body.sources,
+        blocked=body.blocked,
+    )
+    return {"ok": True}
+
+
 # --- Login del panel ---
 
 
@@ -129,6 +156,22 @@ def _run_sync(request: Request, full_rebuild: bool):
         result = {"added": 0, "updated": 0, "removed": 0, "skipped": 0, "errors": [str(exc)]}
 
     return templates.TemplateResponse(request, "dashboard.html", _admin_context(request, result))
+
+
+@app.get("/admin/conversations")
+def admin_conversations(request: Request, user_id: int | None = None):
+    if not session_user(request):
+        return RedirectResponse("/login", status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "conversations.html",
+        {
+            "user": session_user(request),
+            "users": store.get_conversation_users(),
+            "conversations": store.get_conversations(user_id=user_id),
+            "selected_user_id": user_id,
+        },
+    )
 
 
 @app.post("/admin/sync")

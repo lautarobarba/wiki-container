@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Wiki RAG — Conversaciones{% endblock %}
+{% block styles %}
+    .conv-layout { display: flex; gap: 1.5rem; align-items: flex-start; margin-top: 1rem; }
+    .conv-users { flex: 0 0 240px; }
+    .conv-thread { flex: 1; min-width: 0; }
+    @media (max-width: 720px) {
+        .conv-layout { flex-direction: column; }
+        .conv-users { flex-basis: auto; width: 100%; }
+    }
+
+    .user-list { display: flex; flex-direction: column; gap: 0.25rem; }
+    .user-item {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.7rem;
+    }
+    .user-item:hover { background: var(--surface); }
+    .user-item.active { border-color: var(--primary); background: var(--surface); }
+    .user-item .name { font-weight: 600; }
+    .user-item .meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+    .user-item .flag { color: var(--err); }
+
+    .exchange {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.75rem 0.9rem;
+        margin-bottom: 0.9rem;
+    }
+    .exchange.blocked { border-left: 4px solid var(--err); }
+    .exchange-head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 0.6rem;
+    }
+    .exchange-head .who { font-weight: 600; color: inherit; }
+    .badge-sm {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.05rem 0.55rem;
+        font-size: 0.72rem;
+    }
+    .badge-sm.err { color: var(--err); border-color: var(--err); }
+    .msg { display: flex; gap: 0.5rem; margin: 0.35rem 0; }
+    .msg .role {
+        flex: 0 0 68px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        padding-top: 0.2rem;
+    }
+    .msg .text {
+        flex: 1;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 0.4rem 0.6rem;
+    }
+    .msg.assistant .text { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+    .sources { margin: 0.4rem 0 0 68px; font-size: 0.8rem; color: var(--muted); }
+    .sources a { color: var(--primary); }
+    .empty { color: var(--muted); padding: 1rem 0; }
+{% endblock %}
+{% block body %}
+    <nav class="navbar">
+        <span class="brand">Wiki RAG</span>
+        <div class="nav-links">
+            <a href="/admin">Índice</a>
+            <a href="/admin/conversations" class="active">Conversaciones</a>
+        </div>
+        <div class="session">
+            <span>{{ user }}</span>
+            <form method="post" action="/logout">
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </nav>
+    <main>
+        <h1>Conversaciones con el chatbot</h1>
+        <p class="muted" style="margin-top: 0">
+            Historial de consultas al asistente Temis. Elegí un usuario para ver solo sus conversaciones.
+        </p>
+
+        <div class="conv-layout">
+            <aside class="conv-users">
+                <div class="user-list">
+                    <a href="/admin/conversations"
+                       class="user-item {{ 'active' if selected_user_id is none else '' }}">
+                        <span class="name">Todos los usuarios</span>
+                        <span class="meta">Ver la actividad reciente</span>
+                    </a>
+                    {% for u in users %}
+                        <a href="/admin/conversations?user_id={{ u.user_id }}"
+                           class="user-item {{ 'active' if selected_user_id == u.user_id else '' }}">
+                            <span class="name">{{ u.user_name or 'Usuario #' ~ u.user_id }}</span>
+                            <span class="meta">
+                                {{ u.messages }} mensaje{{ 's' if u.messages != 1 else '' }} ·
+                                último {{ u.last_at }} UTC
+                                {% if u.blocked %}· <span class="flag">{{ u.blocked }} bloqueado{{ 's' if u.blocked != 1 else '' }}</span>{% endif %}
+                            </span>
+                        </a>
+                    {% else %}
+                        <p class="empty">Todavía no hay conversaciones registradas.</p>
+                    {% endfor %}
+                </div>
+            </aside>
+
+            <section class="conv-thread">
+                {% if not conversations %}
+                    <p class="empty">
+                        {% if selected_user_id is not none %}
+                            Este usuario no tiene conversaciones registradas.
+                        {% else %}
+                            Cuando el personal use el chatbot, las consultas van a aparecer acá.
+                        {% endif %}
+                    </p>
+                {% endif %}
+                {% for c in conversations %}
+                    <article class="exchange {{ 'blocked' if c.blocked else '' }}">
+                        <div class="exchange-head">
+                            <span class="who">{{ c.user_name or 'Usuario #' ~ c.user_id }}</span>
+                            {% if c.shelf_name %}<span>· {{ c.shelf_name }}</span>{% endif %}
+                            <span>· {{ c.created_at }} UTC</span>
+                            {% if c.blocked %}<span class="badge-sm err">Bloqueado</span>{% endif %}
+                        </div>
+                        <div class="msg user">
+                            <span class="role">Usuario</span>
+                            <span class="text">{{ c.question }}</span>
+                        </div>
+                        <div class="msg assistant">
+                            <span class="role">Temis</span>
+                            <span class="text">{{ c.answer }}</span>
+                        </div>
+                        {% if c.sources %}
+                            <div class="sources">
+                                Fuentes:
+                                {% for s in c.sources %}
+                                    {% if s.url %}<a href="{{ s.url }}">{{ s.book }} — {{ s.page }}</a>{% else %}{{ s.book }} — {{ s.page }}{% endif %}{% if not loop.last %}; {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </section>
+        </div>
+    </main>
+{% endblock %}

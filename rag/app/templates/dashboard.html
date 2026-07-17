@@ -30,6 +30,10 @@
 {% block body %}
     <nav class="navbar">
         <span class="brand">Wiki RAG</span>
+        <div class="nav-links">
+            <a href="/admin" class="active">Índice</a>
+            <a href="/admin/conversations">Conversaciones</a>
+        </div>
         <div class="session">
             <span>{{ user }}</span>
             <form method="post" action="/logout">
