@@ -15,6 +15,8 @@ services:
     #   - 3306:3306
     volumes:
       - ./database/data:/var/lib/mysql
+    networks:
+      - wiki_network
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -43,6 +45,8 @@ services:
       - ./themes:/var/www/bookstack/themes
       # Apache config
       - ./apache.conf:/etc/apache2/sites-available/000-default.conf:ro
+    networks:
+      - wiki_network
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -59,3 +63,9 @@ services:
       - ${RAG_PORT:-8090}:8090
     volumes:
       - ./rag/data:/app/data
+    networks:
+      - wiki_network
+
+networks:
+  wiki_network:
+    driver: bridge
