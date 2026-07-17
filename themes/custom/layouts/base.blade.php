@@ -37,29 +37,13 @@
 
     <!-- Custom Styles & Head Content -->
     @include('layouts.parts.custom-styles')
+    @include('layouts.parts.theme-styles')
     @include('layouts.parts.custom-head')
 
     @stack('head')
 
     <!-- Translations for JS -->
     @stack('translations')
-
-    <style>
-        h1 {
-            font-size: 1.8em;
-        }
-        h2 {
-            font-size: 1.6em;
-        }
-        h3 {
-            font-size: 1.4em;
-        }
-        /* Movido a la izquierda: el rincón inferior derecho lo ocupa el chat IA */
-        .back-to-top {
-            right: auto;
-            left: 24px;
-        }
-    </style>
 </head>
 <body
     @if(setting()->getForCurrentUser('ui-shortcuts-enabled', false))

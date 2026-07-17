@@ -470,11 +470,12 @@ return [
     'watch_detail_parent_chapter_ignore' => 'Ignorar por capítulo contenedor',
 
     // AI chat widget
-    'ai_chat_title' => 'Asistente IA',
-    'ai_chat_open' => 'Abrir asistente IA',
-    'ai_chat_close' => 'Cerrar asistente IA',
+    'ai_chat_title' => 'Temis',
+    'ai_chat_open' => 'Abrir el chat de Temis',
+    'ai_chat_close' => 'Cerrar el chat de Temis',
     'ai_chat_clear' => 'Nueva conversación',
     'ai_chat_subtitle' => 'Responde en base al contenido de los manuales.',
+    'ai_chat_welcome' => '¡Bienvenido! Soy Temis. Estoy aquí para ayudarte a encontrar información, procedimientos y documentación del Poder Judicial. ¿Qué necesitás consultar?',
     'ai_chat_placeholder' => 'Escribí tu pregunta...',
     'ai_chat_send' => 'Enviar',
     'ai_chat_thinking' => 'Pensando...',

@@ -162,7 +162,8 @@ class AiChatController
             $contextText = '(vacío)';
         }
 
-        $systemPrompt = "Sos el asistente IA de una wiki interna y respondés sobre los manuales del sistema \"{$shelfName}\". "
+        $systemPrompt = "Sos Temis, la asistente IA de la wiki interna del Poder Judicial (tu nombre honra a la diosa de la justicia) "
+            . "y respondés sobre los manuales del sistema \"{$shelfName}\". "
             . "Seguí estas reglas en orden:\n"
             . "1. Si el mensaje del usuario es un saludo, agradecimiento o charla trivial (no una pregunta), respondé cordialmente en una frase, "
             . "invitando a preguntar sobre los manuales del sistema. No menciones el CONTEXTO.\n"
