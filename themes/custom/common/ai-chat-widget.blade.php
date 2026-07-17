@@ -202,6 +202,47 @@
         border: 1px solid var(--ai-chat-border);
         border-end-start-radius: 4px;
         box-shadow: 0 1px 2px rgba(16, 30, 54, 0.05);
+        white-space: normal;
+    }
+
+    /* Markdown renderizado dentro de las burbujas del asistente */
+    .ai-chat-bubble.assistant > *:first-child { margin-top: 0; }
+    .ai-chat-bubble.assistant > *:last-child { margin-bottom: 0; }
+    .ai-chat-bubble.assistant p { margin: 0 0 0.5em; }
+    .ai-chat-bubble.assistant ul,
+    .ai-chat-bubble.assistant ol {
+        margin: 0.35em 0;
+        padding-inline-start: 1.3em;
+    }
+    .ai-chat-bubble.assistant li { margin: 0.15em 0; }
+    .ai-chat-bubble.assistant li::marker { color: var(--color-primary); }
+    .ai-chat-bubble.assistant strong { font-weight: 600; }
+    .ai-chat-bubble.assistant em { font-style: italic; }
+    .ai-chat-bubble.assistant a {
+        color: var(--color-link);
+        text-decoration: underline;
+    }
+    .ai-chat-bubble.assistant code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        background: var(--ai-chat-surface-alt);
+        padding: 0.08em 0.35em;
+        border-radius: 5px;
+        border: 1px solid var(--ai-chat-border);
+    }
+    .ai-chat-bubble.assistant pre {
+        background: var(--ai-chat-surface-alt);
+        border: 1px solid var(--ai-chat-border);
+        border-radius: 8px;
+        padding: 0.6em 0.7em;
+        overflow-x: auto;
+        margin: 0.4em 0;
+    }
+    .ai-chat-bubble.assistant pre code {
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-size: 0.85em;
     }
 
     .ai-chat-sources {
@@ -340,10 +381,108 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
+        function escapeHtml(value) {
+            return value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Render Markdown mínimo y SEGURO: se escapa todo el HTML de entrada antes de
+        // aplicar las transformaciones, así nada de lo que devuelva el modelo se
+        // interpreta como HTML crudo. Soporta negrita, itálica, código (inline y en
+        // bloque), listas, enlaces http(s) y párrafos. Nada de tablas ni imágenes.
+        function renderMarkdown(source) {
+            var codeBlocks = [];
+            source = source.replace(/```[a-zA-Z0-9]*\n?([\s\S]*?)```/g, function (_, code) {
+                codeBlocks.push(code.replace(/\n+$/, ''));
+                return 'B' + (codeBlocks.length - 1) + '';
+            });
+
+            var text = escapeHtml(source);
+
+            var inlineCodes = [];
+            text = text.replace(/`([^`\n]+)`/g, function (_, code) {
+                inlineCodes.push(code);
+                return 'I' + (inlineCodes.length - 1) + '';
+            });
+
+            text = text
+                .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+                    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+                .replace(/(^|[\s(])_([^_\n]+)_/g, '$1<em>$2</em>');
+
+            var lines = text.split('\n');
+            var out = [];
+            var list = null;
+            var para = [];
+
+            function flushPara() {
+                if (para.length) {
+                    out.push('<p>' + para.join('<br>') + '</p>');
+                    para = [];
+                }
+            }
+            function flushList() {
+                if (list) {
+                    out.push('<' + list.type + '>' + list.items.map(function (item) {
+                        return '<li>' + item + '</li>';
+                    }).join('') + '</' + list.type + '>');
+                    list = null;
+                }
+            }
+
+            lines.forEach(function (line) {
+                var blockPh = line.match(/^\s*B(\d+)\s*$/);
+                if (blockPh) {
+                    flushList();
+                    flushPara();
+                    out.push('B' + blockPh[1] + '');
+                    return;
+                }
+                var ordered = line.match(/^\s*\d+\.\s+(.*)$/);
+                var unordered = line.match(/^\s*[-*]\s+(.*)$/);
+                if (ordered) {
+                    flushPara();
+                    if (!list || list.type !== 'ol') { flushList(); list = { type: 'ol', items: [] }; }
+                    list.items.push(ordered[1]);
+                } else if (unordered) {
+                    flushPara();
+                    if (!list || list.type !== 'ul') { flushList(); list = { type: 'ul', items: [] }; }
+                    list.items.push(unordered[1]);
+                } else if (line.trim() === '') {
+                    flushList();
+                    flushPara();
+                } else {
+                    flushList();
+                    para.push(line);
+                }
+            });
+            flushList();
+            flushPara();
+
+            var html = out.join('');
+            html = html.replace(/I(\d+)/g, function (_, n) {
+                return '<code>' + inlineCodes[n] + '</code>';
+            });
+            html = html.replace(/B(\d+)/g, function (_, n) {
+                return '<pre><code>' + escapeHtml(codeBlocks[n]) + '</code></pre>';
+            });
+            return html;
+        }
+
         function addBubble(role, text) {
             var bubble = document.createElement('div');
             bubble.className = 'ai-chat-bubble ' + role;
-            bubble.textContent = text;
+            if (role === 'assistant') {
+                bubble.innerHTML = renderMarkdown(text);
+            } else {
+                bubble.textContent = text;
+            }
             messages.appendChild(bubble);
             scrollToEnd();
             return bubble;
