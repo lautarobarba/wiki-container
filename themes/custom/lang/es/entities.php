@@ -482,4 +482,5 @@ return [
     'ai_chat_sources_label' => 'Basado en:',
     'ai_chat_no_info' => 'No tengo información sobre eso en los manuales disponibles.',
     'ai_chat_error' => 'No se pudo obtener una respuesta del asistente. Probá de nuevo más tarde.',
+    'ai_chat_blacklisted' => 'No puedo ayudarte con esa consulta: tu mensaje contiene palabras ofensivas o inapropiadas para este chat (insultos, expresiones discriminatorias, chistes u otro contenido no permitido). Reformulá tu consulta sobre los manuales del sistema y con gusto te ayudo.',
 ];

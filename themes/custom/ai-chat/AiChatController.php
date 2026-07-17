@@ -19,6 +19,35 @@ class AiChatController
     private const HISTORY_LIMIT = 30;   // mensajes guardados por sistema
     private const MODEL_HISTORY_TURNS = 12; // mensajes previos enviados al modelo
 
+    /**
+     * Palabras que no corresponde procesar (insultos, chistes, términos ofensivos).
+     * Se comparan normalizadas (minúsculas y sin acentos) y por palabra completa,
+     * así "computadora" o el término legal "putativo" no generan falsos positivos.
+     * Incluí las variantes de género/número porque el match es exacto (\b...\b).
+     */
+    private const BLACKLIST = [
+        // Pedido explícito
+        'chiste', 'chistes',
+        'puto', 'puta', 'putos', 'putas', 'putazo', 'putazos',
+        'mierda', 'mierdas', 'bosta', 'bostas', 'caca', 'cagada', 'cagadas', 'cagar', 'excremento',
+        'forro', 'forra', 'forros', 'forras',
+        'porqueria', 'porquerias',
+        // Insultos y malas palabras habituales
+        'boludo', 'boluda', 'boludos', 'boludas',
+        'pelotudo', 'pelotuda', 'pelotudos', 'pelotudas',
+        'imbecil', 'imbeciles',
+        'idiota', 'idiotas',
+        'estupido', 'estupida', 'estupidos', 'estupidas',
+        'tarado', 'tarada', 'tarados', 'taradas',
+        'conchudo', 'conchuda', 'conchudos', 'conchudas',
+        'garca', 'garcas',
+        'trolo', 'trola', 'trolos', 'trolas',
+        'sorete', 'soretes',
+        'hdp',
+        // Términos racistas / discriminatorios
+        'sudaca', 'sudacas', 'negrata', 'negratas',
+    ];
+
     public function history(Request $request)
     {
         $data = $request->validate(['shelf_id' => 'required|integer']);
@@ -45,6 +74,16 @@ class AiChatController
             'message'  => 'required|string|max:1000',
             'shelf_id' => 'required|integer',
         ]);
+
+        // Filtro previo: si el mensaje trae palabras prohibidas, cortamos acá y
+        // evitamos gastar llamadas a RAG y a la API de OpenAI.
+        if ($this->containsBlacklistedWord($data['message'])) {
+            return response()->json([
+                'answer'  => trans('entities.ai_chat_blacklisted'),
+                'sources' => [],
+                'no_info' => true,
+            ]);
+        }
 
         $shelf = $this->findShelfOrFail((int) $data['shelf_id']);
         $historyKey = $this->historyKey($shelf->id);
@@ -86,6 +125,41 @@ class AiChatController
     private function historyKey(int $shelfId): string
     {
         return 'ai_chat_history.' . $shelfId;
+    }
+
+    /**
+     * Devuelve true si el mensaje contiene alguna palabra de la blacklist.
+     * El match es por palabra completa sobre el texto normalizado.
+     */
+    private function containsBlacklistedWord(string $message): bool
+    {
+        $normalized = $this->normalizeForBlacklist($message);
+        foreach (self::BLACKLIST as $word) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/u', $normalized)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Pasa a minúsculas y quita acentos/diacríticos para comparar contra la
+     * blacklist (que se guarda ya normalizada).
+     */
+    private function normalizeForBlacklist(string $message): string
+    {
+        $lower = mb_strtolower($message, 'UTF-8');
+        $map = [
+            'á' => 'a', 'à' => 'a', 'ä' => 'a', 'â' => 'a',
+            'é' => 'e', 'è' => 'e', 'ë' => 'e', 'ê' => 'e',
+            'í' => 'i', 'ì' => 'i', 'ï' => 'i', 'î' => 'i',
+            'ó' => 'o', 'ò' => 'o', 'ö' => 'o', 'ô' => 'o',
+            'ú' => 'u', 'ù' => 'u', 'ü' => 'u', 'û' => 'u',
+            'ñ' => 'n',
+        ];
+
+        return strtr($lower, $map);
     }
 
     /**
