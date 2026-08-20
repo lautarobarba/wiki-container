@@ -22,7 +22,7 @@ services:
 
   wiki_app:
     container_name: wiki_app
-    image: solidnerd/bookstack:25.2
+    image: solidnerd/bookstack:26.5
     env_file: .env
     depends_on:
       - wiki_db
