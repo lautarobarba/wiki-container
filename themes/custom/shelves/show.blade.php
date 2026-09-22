@@ -28,7 +28,7 @@
         </div>
 
         <div class="book-content">
-            <div class="text-muted break-text">{!! $shelf->descriptionHtml() !!}</div>
+            <div class="text-muted break-text">{!! $shelf->descriptionInfo()->getHtml() !!}</div>
             @if(count($sortedVisibleShelfBooks) > 0)
                 @if($view === 'list')
                     <div class="entity-list">

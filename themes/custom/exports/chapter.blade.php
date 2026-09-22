@@ -6,7 +6,7 @@
 @section('content')
 
     <h1 style="font-size: 1.8em">{{$chapter->name}}</h1>
-    <div>{!! $chapter->descriptionHtml() !!}</div>
+    <div>{!! $chapter->descriptionInfo()->getHtml() !!}</div>
 
     @include('exports.parts.chapter-contents-menu', ['pages' => $pages])
 
