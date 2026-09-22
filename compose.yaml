@@ -15,6 +15,7 @@ services:
     #   - 3306:3306
     volumes:
       - ./database/data:/var/lib/mysql
+      - ./database/backups:/backups
     networks:
       - wiki_network
     extra_hosts:
