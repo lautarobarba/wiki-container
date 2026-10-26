@@ -8,8 +8,8 @@
 
 @push('social-meta')
     <meta property="og:description" content="{{ Str::limit($book->description, 100, '...') }}">
-    @if($book->cover)
-        <meta property="og:image" content="{{ $book->getBookCover() }}">
+    @if($book->coverInfo()->exists())
+        <meta property="og:image" content="{{ $book->coverInfo()->getUrl() }}">
     @endif
 @endpush
 
@@ -43,7 +43,7 @@
                     <p class="text-muted italic mb-m mt-xl">{{ trans('entities.books_empty_contents') }}</p>
 
                     <div class="icon-list block inline">
-                        @if(userCan('page-create', $book))
+                        @if(userCan(\BookStack\Permissions\Permission::PageCreate, $book))
                             <a href="{{ $book->getUrl('/create-page') }}" class="icon-list-item text-page">
                                 <span class="icon">@icon('page')</span>
                                 <span>{{ trans('entities.books_empty_create_page') }}</span>
@@ -60,228 +60,10 @@
 
 @stop
 
-@section('right')
-    @if(!user()->isGuest())
-        <div class="mb-xl">
-            <h5>{{ trans('common.roles') }} y Permisos</h5>
-            <div class="text-muted text-small mb-s">Roles con acceso a este manual:</div>
-
-            @php
-                // Simplificar para evitar errores de clase
-                $rolesWithPermissions = collect();
-                try {
-                    // Mostrar información básica de acceso sin consultar directamente los roles
-                    $currentUser = user();
-                    $userPermissions = [];
-                    
-                    // Verificar permisos del usuario actual para books
-                    if (userCan('book-view-all') || userCan('book-view-own') || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Ver';
-                    }
-                    if (userCan('book-create-all') || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Crear libros';
-                    }
-                    if (userCan('book-update-all') || userCan('book-update-own') || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Editar';
-                    }
-                    if (userCan('book-delete-all') || userCan('book-delete-own') || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Eliminar';
-                    }
-                    if (userCan('page-create', $book) || $currentUser->hasSystemRole('admin')) {
-                        $userPermissions[] = 'Crear páginas';
-                    }
-
-                    // Crear información del usuario actual
-                    if (!empty($userPermissions)) {
-                        $userInfo = (object)[
-                            'display_name' => $currentUser->name,
-                            'system_name' => $currentUser->hasSystemRole('admin') ? 'admin' : 'user',
-                            'permissions' => $userPermissions,
-                            'is_admin' => $currentUser->hasSystemRole('admin'),
-                            'is_current' => true
-                        ];
-                        $rolesWithPermissions->push($userInfo);
-                    }
-                    
-                    // Agregar información sobre acceso público si no hay restricciones
-                    if (!$book->hasPermissions()) {
-                        $publicInfo = (object)[
-                            'display_name' => 'Público',
-                            'system_name' => 'public',
-                            'permissions' => ['Ver'],
-                            'is_admin' => false,
-                            'is_current' => false
-                        ];
-                        $rolesWithPermissions->push($publicInfo);
-                    }
-                    
-                } catch (\Exception $e) {
-                    // En caso de error, mostrar solo usuario actual
-                    $rolesWithPermissions = collect();
-                }
-            @endphp
-            
-            @if($rolesWithPermissions->count() > 0)
-                <div class="text-small">
-                    @foreach($rolesWithPermissions as $role)
-                        <div class="entity-meta-item mb-s">
-                            <div class="flex-container-row">
-                                <div class="flex fit-content">
-                                    @if($role->is_admin)
-                                        @icon('user-star')
-                                    @elseif($role->system_name === 'public')
-                                        @icon('globe')
-                                    @else
-                                        @icon('user')
-                                    @endif
-                                </div>
-                                <div class="flex">
-                                    <div>
-                                        <strong>{{ $role->display_name }}</strong>
-                                        @if($role->is_admin)
-                                            <span class="text-muted text-small">(Administrador)</span>
-                                        @elseif($role->system_name === 'public')
-                                            <span class="text-muted text-small">(Acceso público)</span>
-                                        @elseif($role->is_current)
-                                            <span class="text-muted text-small">(Tu acceso actual)</span>
-                                        @endif
-                                    </div>
-                                    <div class="text-small text-muted mt-xs">
-                                        @foreach($role->permissions as $permission)
-                                            <span class="mr-xs">
-                                                @if($permission === 'Ver')
-                                                    @icon('eye') {{ $permission }}
-                                                @elseif($permission === 'Crear libros')
-                                                    @icon('add') {{ $permission }}
-                                                @elseif($permission === 'Crear páginas')
-                                                    @icon('page') {{ $permission }}
-                                                @elseif($permission === 'Editar')
-                                                    @icon('edit') {{ $permission }}
-                                                @elseif($permission === 'Eliminar')
-                                                    @icon('delete') {{ $permission }}
-                                                @else
-                                                    @icon('check') {{ $permission }}
-                                                @endif
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="text-muted text-small">
-                    @icon('lock')
-                    <span>Acceso restringido</span>
-                </div>
-            @endif
-        </div> 
-    @endif 
-
-    @if(!user()->isGuest())
-        <div class="mb-xl">
-            <h5>{{ trans('common.details') }}</h5>
-            <div class="blended-links">
-                @include('entities.meta', ['entity' => $book, 'watchOptions' => $watchOptions])
-                @if($book->hasPermissions())
-                    <div class="active-restriction">
-                        @if(userCan('restrictions-manage', $book))
-                            <a href="{{ $book->getUrl('/permissions') }}" class="entity-meta-item">
-                                @icon('lock')
-                                <div>{{ trans('entities.books_permissions_active') }}</div>
-                            </a>
-                        @else
-                            <div class="entity-meta-item">
-                                @icon('lock')
-                                <div>{{ trans('entities.books_permissions_active') }}</div>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        </div>
-    @endif
-
-    <div class="actions mb-xl">
-        <h5>{{ trans('common.actions') }}</h5>
-        <div class="icon-list text-link">
-
-            @if(userCan('page-create', $book))
-                <a href="{{ $book->getUrl('/create-page') }}" data-shortcut="new" class="icon-list-item">
-                    <span>@icon('add')</span>
-                    <span>{{ trans('entities.pages_new') }}</span>
-                </a>
-            @endif
-            <hr class="primary-background">
-
-            @if(userCan('book-update', $book))
-                <a href="{{ $book->getUrl('/edit') }}" data-shortcut="edit" class="icon-list-item">
-                    <span>@icon('edit')</span>
-                    <span>{{ trans('common.edit') }}</span>
-                </a>
-                <a href="{{ $book->getUrl('/sort') }}" data-shortcut="sort" class="icon-list-item">
-                    <span>@icon('sort')</span>
-                    <span>{{ trans('common.sort') }}</span>
-                </a>
-            @endif
-            @if(userCan('book-create-all'))
-                <a href="{{ $book->getUrl('/copy') }}" data-shortcut="copy" class="icon-list-item">
-                    <span>@icon('copy')</span>
-                    <span>{{ trans('common.copy') }}</span>
-                </a>
-            @endif
-            @if(userCan('restrictions-manage', $book))
-                <a href="{{ $book->getUrl('/permissions') }}" data-shortcut="permissions" class="icon-list-item">
-                    <span>@icon('lock')</span>
-                    <span>{{ trans('entities.permissions') }}</span>
-                </a>
-            @endif
-            @if(userCan('book-delete', $book))
-                <a href="{{ $book->getUrl('/delete') }}" data-shortcut="delete" class="icon-list-item">
-                    <span>@icon('delete')</span>
-                    <span>{{ trans('common.delete') }}</span>
-                </a>
-            @endif
-
-            <hr class="primary-background">
-
-            @if($watchOptions->canWatch() && !$watchOptions->isWatching())
-                @include('entities.watch-action', ['entity' => $book])
-            @endif
-            @if(!user()->isGuest())
-                @include('entities.favourite-action', ['entity' => $book])
-            @endif
-            @if(userCan('content-export'))
-                @include('entities.export-menu', ['entity' => $book])
-            @endif
-        </div>
-    </div>
-
-@stop
-
 @section('left')
-
-    @include('entities.search-form', ['label' => trans('entities.books_search_this')])
-
-    @if($book->tags->count() > 0)
-        <div class="mb-xl">
-            @include('entities.tag-list', ['entity' => $book])
-        </div>
-    @endif
-
-    @if(count($bookParentShelves) > 0)
-        <div class="actions mb-xl">
-            <h5>{{ trans('entities.shelves') }}</h5>
-            @include('entities.list', ['entities' => $bookParentShelves, 'style' => 'compact'])
-        </div>
-    @endif
-
-    {{-- @if(count($activity) > 0)
-        <div id="recent-activity" class="mb-xl">
-            <h5>{{ trans('entities.recent_activity') }}</h5>
-            @include('common.activity-list', ['activity' => $activity])
-        </div>
-    @endif --}}
+    @include('common.view-blocks', ['location' => 'books-show', 'position' => 'left'])
 @stop
 
+@section('right')
+    @include('common.view-blocks', ['location' => 'books-show', 'position' => 'right'])
+@stop
