@@ -46,6 +46,8 @@ services:
       - ./themes:/var/www/bookstack/themes
       # Apache config
       - ./apache.conf:/etc/apache2/sites-available/000-default.conf:ro
+      # PHP config
+      - ./php-security.ini:/usr/local/etc/php/conf.d/zz-security.ini:ro
     networks:
       - wiki_network
     extra_hosts:
